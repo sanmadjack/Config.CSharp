@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections;
 using System.Xml;
 using MVC;
-using Translations;
+using Translator;
 namespace Config
 {
 
