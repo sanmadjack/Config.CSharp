@@ -116,7 +116,7 @@ namespace Config {
                     if (i < 5)
                         System.Threading.Thread.Sleep(100);
                     else
-                        throw new TranslateableException("ConfigOpenError", e);
+                        throw new TranslateableException("WriteDenied", e, file_full_path);
                 } finally {
                     if (config_stream != null)
                         config_stream.Close();
@@ -143,7 +143,7 @@ namespace Config {
                         config.Load(reader);
                     } else {
                         config_ready = false;
-                        throw new TranslateableException("ConfigXMLError", e);
+                        throw new TranslateableException("XMLFormatError", e, file_full_path);
                     }
                 } finally {
                     reader.Close();
@@ -164,7 +164,7 @@ namespace Config {
             try {
                 config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Read);
             } catch (Exception e) {
-                throw new TranslateableException("ConfigPurgeError", e);
+                throw new TranslateableException("DeleteError", e, file_full_path);
             } finally {
                 config_stream.Close();
             }
