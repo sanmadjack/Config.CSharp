@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MVC;
-using Translator;
+using Exceptions;
 namespace Config {
 
-    public class ConfigFileHandler : AModelItem {
+    public class ConfigFileHandler : ANotifyingObject {
         protected System.Threading.Mutex mutex = null;
 
         public const char value_divider = '|';
         private XmlDocument config;
         private FileStream config_stream;
-        protected string file_path = null,
-                                            file_name = null;
+        protected string file_path = null;
+        protected const string file_name = "config.xml";
+
         protected string file_full_path {
             get {
                 return Path.Combine(file_path, file_name);
             }
         }
+
+        private string app_name;
+
         private bool config_ready;
 
         bool enable_writing = true;
@@ -35,14 +39,38 @@ namespace Config {
             }
         }
 
-        protected ConfigFileHandler(string new_file_path, string new_file_name, System.Threading.Mutex mutex)
-            : this(new_file_path, new_file_name) {
+        protected ConfigFileHandler(string app_name, ConfigMode mode, System.Threading.Mutex mutex)
+            : this(app_name, mode) {
             this.mutex = mutex;
         }
-        protected ConfigFileHandler(string new_file_path, string new_file_name)
-            : base(new_file_name) {
-            file_path = new_file_path;
-            file_name = new_file_name;
+
+        protected ConfigFileHandler(string app_name, ConfigMode mode)
+            : base() {
+                this.app_name = app_name;
+
+                switch (mode) {
+                    case ConfigMode.PortableApps:
+                        DirectoryInfo dir = new DirectoryInfo(Path.Combine("..", "..", "Data"));
+                        if (!dir.Exists) {
+                            dir.Create();
+                            dir.Refresh();
+                        }
+                        file_path = dir.FullName;
+                        break;
+                    case ConfigMode.AllUsers:
+                        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), app_name);
+                        break;
+                    case ConfigMode.SingleUser:
+                        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), app_name);
+                        break;
+                }
+
+            if (file_path != null) {
+                // Load the settings from the XML file
+                loadSettings();
+            } else {
+                throw new Exception("Could Not Determin Config File Location");
+            }
         }
 
         protected void lockFile() {
@@ -70,7 +98,7 @@ namespace Config {
                 try {
                     loadSettings();
                 } catch (Exception ex) {
-                    throw new TranslateableException("SettingsWatcherError", ex);
+                    throw ex;
                 }
             }
         }
@@ -116,7 +144,7 @@ namespace Config {
                     if (i < 5)
                         System.Threading.Thread.Sleep(100);
                     else
-                        throw new TranslateableException("WriteDenied", e, file_full_path);
+                        throw new WriteDeniedException(new FileInfo(file_full_path), e);
                 } finally {
                     if (config_stream != null)
                         config_stream.Close();
@@ -143,7 +171,7 @@ namespace Config {
                         config.Load(reader);
                     } else {
                         config_ready = false;
-                        throw new TranslateableException("XMLFormatError", e, file_full_path);
+                        throw e;
                     }
                 } finally {
                     reader.Close();
@@ -164,7 +192,7 @@ namespace Config {
             try {
                 config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Read);
             } catch (Exception e) {
-                throw new TranslateableException("DeleteError", e, file_full_path);
+                throw new Exception("Error while purging " + file_full_path, e);
             } finally {
                 config_stream.Close();
             }

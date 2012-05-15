@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigFileHandler.cs" />
+    <Compile Include="ConfigMode.cs" />
     <Compile Include="IniFileHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -50,13 +51,13 @@
       <Project>{88E4E120-9C45-4EAC-887B-B77474B799B4}</Project>
       <Name>Collections</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Exceptions\Exceptions.csproj">
+      <Project>{22450FF6-F8AB-4D85-BBC4-F3EC3822D1C5}</Project>
+      <Name>Exceptions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MVC\MVC.csproj">
       <Project>{4670BE82-DDDF-4614-BE3B-FB5DE4226D93}</Project>
       <Name>MVC</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Translator\Translator.csproj">
-      <Project>{1B233D4E-7DF0-4608-A0D5-94D416B5B359}</Project>
-      <Name>Translator</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
