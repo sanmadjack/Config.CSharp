@@ -44,6 +44,7 @@
     <Compile Include="ConfigFileHandler.cs" />
     <Compile Include="ConfigMode.cs" />
     <Compile Include="IniFileHandler.cs" />
+    <Compile Include="PermissionsHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
