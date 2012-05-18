@@ -41,7 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfigFileHandler.cs" />
+    <Compile Include="ASettingsSource.cs" />
+    <Compile Include="ASettings.cs" />
+    <Compile Include="Setting.cs" />
+    <Compile Include="SettingsCollection.cs" />
+    <Compile Include="XmlSettingsFile.cs" />
     <Compile Include="ConfigMode.cs" />
     <Compile Include="IniFileHandler.cs" />
     <Compile Include="PermissionsHelper.cs" />

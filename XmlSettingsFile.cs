@@ -6,213 +6,61 @@ using MVC;
 using Exceptions;
 namespace Config {
 
-    public class ConfigFileHandler : ANotifyingObject {
-        protected System.Threading.Mutex mutex = null;
+    public class XmlSettingsFile : ASettingsSource {
 
-        public const char value_divider = '|';
         private XmlDocument config;
-        private FileStream config_stream;
-        protected string file_path = null;
-        protected const string file_name = "config.xml";
 
-        protected string file_full_path {
-            get {
-                return Path.Combine(file_path, file_name);
-            }
-        }
 
-        private string app_name;
-
-        private bool config_ready;
-
-        bool enable_writing = true;
-
-        protected List<string> shared_settings = new List<string>();
-
-        private FileSystemWatcher _config_watcher;
-        protected FileSystemWatcher config_watcher {
-            get {
-                return _config_watcher;
-            }
-            set {
-                _config_watcher = value;
-            }
-        }
-
-        protected ConfigFileHandler(string app_name, ConfigMode mode, System.Threading.Mutex mutex)
-            : this(app_name, mode) {
-            this.mutex = mutex;
-        }
-
-        protected ConfigFileHandler(string app_name, ConfigMode mode)
-            : base() {
-                this.app_name = app_name;
-
-                switch (mode) {
-                    case ConfigMode.PortableApps:
-                        DirectoryInfo dir = new DirectoryInfo(Path.Combine("..", "..", "Data"));
-                        if (!dir.Exists) {
-                            dir.Create();
-                            dir.Refresh();
-                        }
-                        file_path = dir.FullName;
-                        break;
-                    case ConfigMode.AllUsers:
-                        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), app_name);
-                        break;
-                    case ConfigMode.SingleUser:
-                        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), app_name);
-                        break;
-                }
-
-            if (file_path != null) {
-                // Load the settings from the XML file
-                loadSettings();
-            } else {
-                throw new Exception("Could Not Determin Config File Location");
-            }
-        }
-
-        protected void lockFile() {
-            enable_writing = false;
-            if (mutex != null)
-                mutex.WaitOne();
-        }
-
-        protected void releaseFile() {
-            if (mutex != null)
-                mutex.ReleaseMutex();
-            enable_writing = true;
-        }
-        protected void setupWatcher() {
-            if (config_watcher == null) {
-                config_watcher = new FileSystemWatcher(file_path);
-                config_watcher.Changed += new FileSystemEventHandler(config_watcher_Changed);
-            }
-            if (!config_watcher.EnableRaisingEvents)
-                config_watcher.EnableRaisingEvents = true;
-        }
-
-        protected virtual void config_watcher_Changed(object sender, FileSystemEventArgs e) {
-            if (e.ChangeType == WatcherChangeTypes.Changed && e.Name == file_name) {
-                try {
-                    loadSettings();
-                } catch (Exception ex) {
-                    throw ex;
-                }
-            }
+        public XmlSettingsFile(string app_name, ConfigMode mode)
+            : base(app_name,mode) {
+                this.file_extension = "xml";
         }
 
 
-        protected bool ready {
-            get {
-                return config_ready;
-            }
-        }
-
-        private void createConfig() {
-            XmlTextWriter write_here = new XmlTextWriter(file_full_path, System.Text.Encoding.UTF8);
+        protected override bool createConfig(string file_name) {
+            XmlTextWriter write_here = new XmlTextWriter(file_name, System.Text.Encoding.UTF8);
             write_here.Formatting = Formatting.Indented;
             write_here.WriteProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
             write_here.WriteStartElement("config");
             write_here.Close();
+            return true;
         }
 
-        protected virtual void loadSettings() {
-            lockFile();
-
-            if (config_watcher != null) {
-                config_watcher.EnableRaisingEvents = false;
-                config_watcher.Dispose();
-                config_watcher = null;
-            }
-            for (int i = 0; i <= 5; i++) {
-                // An optimistic initializer
-                config_ready = true;
-                try {
-                    if (!Directory.Exists(file_path))
-                        Directory.CreateDirectory(file_path);
-
-                    if (!File.Exists(file_full_path)) {
-                        createConfig();
-                    }
-
-                    config_stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-                    break;
-                } catch (Exception e) {
-                    config_ready = false;
-                    if (i < 5)
-                        System.Threading.Thread.Sleep(100);
-                    else
-                        throw new WriteDeniedException(new FileInfo(file_full_path), e);
-                } finally {
-                    if (config_stream != null)
-                        config_stream.Close();
-                }
-            }
-
+        protected override bool loadConfig(FileStream stream) {
             XmlReaderSettings xml_settings = new XmlReaderSettings();
             xml_settings.ConformanceLevel = ConformanceLevel.Document;
             xml_settings.IgnoreComments = true;
             xml_settings.IgnoreWhitespace = true;
             config = new XmlDocument();
-            lock (config_stream) {
-                config_stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-                XmlReader reader = XmlReader.Create(config_stream, xml_settings);
-                try {
-                    config.Load(reader);
-                } catch (XmlException e) {
-                    if (e.Message.StartsWith("Root element is missing")) {
-                        reader.Close();
-                        config_stream.Close();
-                        createConfig();
-                        config_stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-                        reader = XmlReader.Create(config_stream, xml_settings);
-                        config.Load(reader);
-                    } else {
-                        config_ready = false;
-                        throw e;
-                    }
-                } finally {
-                    reader.Close();
-                    config_stream.Close();
-                }
-            }
 
-            foreach (string setting in shared_settings) {
-                NotifyPropertyChanged(setting);
-            }
-
-            setupWatcher();
-
-            releaseFile();
-        }
-        protected void purgeConfig() {
-            lockFile();
+            XmlReader reader = XmlReader.Create(stream, xml_settings);
             try {
-                config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Read);
-            } catch (Exception e) {
-                throw new Exception("Error while purging " + file_full_path, e);
-            } finally {
-                config_stream.Close();
-            }
-            releaseFile();
-        }
-        private bool writeConfig() {
-            lockFile();
-            lock (config_stream) {
-                config_watcher.EnableRaisingEvents = false;
-                config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
-
-                lock (config) {
-                    config.Save(config_stream);
+                config.Load(reader);
+            } catch (XmlException e) {
+                if (e.Message.StartsWith("Root element is missing")) {
+                    reader.Close();
+                    stream.Close();
+                    createConfig(file_full_path);
+                    stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                    reader = XmlReader.Create(stream, xml_settings);
+                    config.Load(reader);
+                } else {
+                    throw e;
                 }
-                config_stream.Close();
-                config_watcher.EnableRaisingEvents = true;
+            } finally {
+                reader.Close();
             }
-            releaseFile();
+            return true;
+
+        }
+
+        protected override bool writeConfig(FileStream stream) {
+            lock (config) {
+                config.Save(stream);
+            }
             return true;
         }
+
         private XmlElement getNode(bool create, params string[] children) {
             if (!config.HasChildNodes)
                 return null;
