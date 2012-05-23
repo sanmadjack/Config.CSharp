@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="ASettingsSource.cs" />
     <Compile Include="ASettings.cs" />
+    <Compile Include="Permissions.cs" />
     <Compile Include="Setting.cs" />
     <Compile Include="SettingsCollection.cs" />
     <Compile Include="XmlSettingsFile.cs" />
