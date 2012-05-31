@@ -10,8 +10,6 @@ namespace Config {
         private FileStream config_stream;
         private System.Threading.Mutex mutex = null;
 
-        public const char value_divider = '|';
-
         private string file_path = null;
         private string file_name = "config";
         protected string file_extension = null;
@@ -23,6 +21,7 @@ namespace Config {
 
         protected List<string> shared_settings = new List<string>();
 
+        public ConfigMode mode { get; protected set; }
 
         private string app_name;
 
@@ -34,7 +33,7 @@ namespace Config {
 
             this.mutex =  new System.Threading.Mutex(false, app_name);
 
-
+            this.mode = mode;
             switch (mode) {
                 case ConfigMode.PortableApps:
                     DirectoryInfo dir = new DirectoryInfo(Path.Combine("..", "..", "Data"));
@@ -61,16 +60,20 @@ namespace Config {
         }
 
 
-        public string read(Setting setting) {
+        public string read(ASetting setting) {
             return "temp";
         }
-        public string write(Setting setting, string value) {
+
+        public string write(ASetting setting, string value) {
             return "old_seting";
         }
 
+        public string erase(ASetting setting) {
+            return "old_setting";
+        }
 
         #region config file stuff
-        private void loadSettings() {
+        protected virtual void loadSettings() {
             lockFile();
             config_ready = false;
             if (config_watcher != null) {
