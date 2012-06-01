@@ -41,15 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ASetting.cs" />
+    <Compile Include="Setting.cs" />
     <Compile Include="ASettingsSource.cs" />
     <Compile Include="ASettings.cs" />
-    <Compile Include="BooleanSetting.cs" />
-    <Compile Include="DictionarySetting.cs" />
-    <Compile Include="ListSetting.cs" />
     <Compile Include="SettingsCollection.cs" />
-    <Compile Include="SettingType.cs" />
-    <Compile Include="StringSetting.cs" />
     <Compile Include="XmlSettingsFile.cs" />
     <Compile Include="ConfigMode.cs" />
     <Compile Include="IniFileHandler.cs" />

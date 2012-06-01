@@ -18,7 +18,7 @@ namespace Config {
 
         public bool IsReady {
             get {
-                return ready;
+                return source.config_ready;
             }
         }
 
@@ -31,54 +31,91 @@ namespace Config {
 
         protected abstract void processSettings();
 
-        public string get(string name) {
-            if (settings.ContainsKey(name)) {
-                return source.read(settings[name]);
-            } else {
+        private Setting keyTest(string name) {
+            if (!settings.ContainsKey(name)) {
                 throw new KeyNotFoundException(name);
+            } else {
+                return settings[name];
             }
         }
 
-        public string erase(string name) {
-            if (settings.ContainsKey(name)) {
-                ASetting setting = this.settings[name];
-                string old = source.read(setting);
-                if (old != null) {
-                    foreach (string notify in setting.all_notifications) {
-                        NotifyPropertyChanged(notify);
-                    }
-                    return source.erase(setting);
+        public List<string> get(string name) {
+            Setting setting = keyTest(name);
+
+            List<string> result = source.read(setting);
+            if(result.Count==0) {
+                result = new List<string>();
+                if (setting.DefaultValue != null) {
+                    result.Add(setting.DefaultValue);
                 }
-                return old;
+            }
+            return result;
+        }
+        public string getLast(string name) {
+            List<string> list = get(name);
+            if (list.Count > 0) {
+                return list[-1];
             } else {
-                throw new KeyNotFoundException(name);
+                return null;
+            }
+        }
+        public bool getLastBoolean(string name) {
+            return Boolean.Parse(getLast(name));
+        }
+
+        public List<string> erase(string name) {
+            Setting setting = keyTest(name);
+            
+            List<string> old = source.erase(setting);
+            if (old.Count > 0) {
+                NotifyPropertyChanged(setting);
+            }
+            return old;
+        }
+
+        public void set(string name, object value) {
+            Setting setting = keyTest(name);
+
+            List<string> old = source.overwrite(setting, value.ToString());
+            if(old.Count != 1 || old[0] != value) {
+                NotifyPropertyChanged(setting);
             }
         }
 
-        public string set(string name, string value) {
-            if (settings.ContainsKey(name)) {
-                ASetting setting = this.settings[name];
-                string old = source.read(setting);
-                if (old != value) {
-                    old = source.write(settings[name], value);
-                    foreach (string notify in setting.all_notifications) {
-                        NotifyPropertyChanged(notify);
-                    }
-                    return old;
-                } else {
-                    return old;
-                }
-            } else {
-                throw new KeyNotFoundException(name);
+        public void add(string name, object value) {
+            Setting setting = keyTest(name);
+            source.write(setting, value.ToString());
+            NotifyPropertyChanged(setting);
+        }
+        public bool addUnique(string name, object value) {
+            Setting setting = keyTest(name);
+            if(!source.read(setting).Contains(value.ToString())) {
+                source.write(setting, value.ToString());
+                NotifyPropertyChanged(setting);
+                return true;
             }
+            return false;
         }
 
+        public bool remove(string name, string value) {
+            Setting setting = keyTest(name);
+            bool result = source.erase(setting, value);
+            if(result)
+                NotifyPropertyChanged(setting);
+            return result;
+        }
+
+        private void NotifyPropertyChanged(Setting setting) {
+            foreach (string notify in setting.all_notifications) {
+                NotifyPropertyChanged(notify);
+            }
+        }
 
         #region Generic, everything could use these kinds of settings
         protected virtual SettingsCollection createSettings(SettingsCollection settings) {
-            settings.Add(new StringSetting("email", null, "email"));
+            settings.Add(new Setting("email", null, "email"));
 
-            settings.Add(new StringSetting("last_drive", current_drive, "portable_settings", "last_drive"));
+            settings.Add(new Setting("last_drive", current_drive, "portable_settings", "last_drive"));
 
             return settings;
         }
@@ -86,7 +123,7 @@ namespace Config {
         #region e-mail related
         public string email {
             get {
-                return get("email");
+                return getLast("email");
             }
             set {
                 if (value != null && value.Contains("@")) {
@@ -107,7 +144,7 @@ namespace Config {
         }
         public string last_drive {
             get {
-                return get("last_drive");
+                return getLast("last_drive");
             }
         }
         public void updateLastDrive() {

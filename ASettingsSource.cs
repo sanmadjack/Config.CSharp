@@ -25,7 +25,7 @@ namespace Config {
 
         private string app_name;
 
-        private bool config_ready;
+        public bool config_ready { get; protected set; }
 
         private bool enable_writing = true;
 
@@ -52,7 +52,7 @@ namespace Config {
             }
 
             if (file_path != null) {
-                // Load the settings from the XML file
+                // Load the settings from the file
                 loadSettings();
             } else {
                 throw new Exception("Could Not Determine Config File Location");
@@ -60,16 +60,35 @@ namespace Config {
         }
 
 
-        public string read(ASetting setting) {
-            return "temp";
+        public List<string> read(Setting setting) {
+            List<string> return_me = new List<string>();
+            return return_me;
         }
 
-        public string write(ASetting setting, string value) {
-            return "old_seting";
+        // This erases all the existing settings with the new setting
+        public List<string> overwrite(Setting setting, string value) {
+            List<string> return_me = read(setting);
+            erase(setting);
+            write(setting, value);
+            return return_me;
+        }
+        public bool overwrite(Setting setting, string old_value, string new_value) {
+            bool result = erase(setting, old_value);
+            write(setting, new_value);
+            return result;
         }
 
-        public string erase(ASetting setting) {
-            return "old_setting";
+        // This ADDS a setting to the stack
+        public void write(Setting setting, string value) {
+        }
+
+        // Erasing existing settings
+        public bool erase(Setting setting, string value) {
+            return false;
+        }
+
+        public List<string> erase(Setting setting) {
+            return read(setting);
         }
 
         #region config file stuff

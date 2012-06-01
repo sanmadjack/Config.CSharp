@@ -4,25 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Config {
-    public abstract class ASetting<T> : ASetting {
-        public T DefaultValue {
-            get;
-            protected set;
-        }
-
-        public ASetting(string name, T default_value, params string[] path) :
-            base(name, path) {
-
-            this.DefaultValue = default_value;
-        }
-
-        protected override Type getType() {
-            return DefaultValue.GetType();
-        }
-
-    }
-
-    public abstract class ASetting {
+    public class Setting {
         public ASettings settings;
 
         public string name { get; private set; }
@@ -38,34 +20,25 @@ namespace Config {
             }
         }
 
-        public Type type {
-            get {
-                return getType();
-            }
+        public string DefaultValue {
+            get;
+            protected set;
         }
 
-
-        protected ASetting(string name, params string[] path) {
+        public Setting(string name, object default_value, params string[] path) {
+            if (default_value == null)
+                this.DefaultValue = null;
+            else
+                this.DefaultValue = default_value.ToString();
             this.name = name;
             foreach (string value in path) {
                 this.path.Add(value);
             }
         }
 
-        protected abstract Type getType();
-
         public void addAdditionalNotification(string name) {
             additional_notifications.Add(name);
         }
-
-        public object get() {
-            return settings.
-        }
-
-        public object set() {
-        }
-
-        public abstract object parse(string value);
 
     }
 }

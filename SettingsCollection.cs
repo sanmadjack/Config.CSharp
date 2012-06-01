@@ -4,15 +4,12 @@ using System.Linq;
 using System.Text;
 
 namespace Config {
-    public class SettingsCollection: Dictionary<string,ASetting> {
-        private ASettings settings;
+    public class SettingsCollection: Dictionary<string,Setting> {
 
-        public SettingsCollection(ASettings settings) {
-            this.settings = settings;
+        public SettingsCollection() {
         }
 
-        public void Add(ASetting setting) {
-            setting.settings = this.settings;
+        public void Add(Setting setting) {
             this.Add(setting.name, setting);
         }
     }
