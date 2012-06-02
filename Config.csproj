@@ -41,7 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Setting.cs" />
     <Compile Include="ASettingsSource.cs" />
     <Compile Include="ASettings.cs" />
     <Compile Include="Permissions.cs" />
