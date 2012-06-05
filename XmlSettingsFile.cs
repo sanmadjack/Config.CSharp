@@ -17,6 +17,52 @@ namespace Config {
         }
 
 
+        public override List<string> read(Setting setting) {
+            List<string> strings = new List<string>();
+            List<XmlElement> nodes = getNodes(setting.path, false);
+            foreach (XmlElement node in nodes) {
+                strings.Add(node.InnerText);
+            }
+            return strings;
+        }
+
+        public override List<string> erase(Setting setting) {
+            List<string> strings = new List<string>();
+            List<XmlElement> nodes = getNodes(setting.path, false);
+            while(nodes.Count > 0) {
+                XmlElement node = nodes[0];
+                strings.Add(node.InnerText);
+                node.ParentNode.RemoveChild(node);
+                nodes.Remove(node);
+            }
+            return strings;
+        }
+
+        public override bool erase(Setting setting, string value) {
+            bool found = false;
+            List<XmlElement> nodes = getNodes(setting.path, false);
+            while (nodes.Count > 0) {
+                XmlElement node = nodes[0];
+                if (node.InnerText == value) {
+                    node.ParentNode.RemoveChild(node);
+                    found = true;
+                }
+                nodes.Remove(node);
+            }
+            return found;
+        }
+        public override void write(Setting setting, string value) {
+            List<string> path = new List<string>(setting.path);
+            string name = path[-1];
+            path.RemoveAt(-1);
+
+            XmlElement node = getNodes(path, true)[0];
+
+            XmlElement new_node = config.CreateElement(name);
+            new_node.InnerText = value;
+            node.AppendChild(new_node);
+        }
+
         protected override bool createConfig(string file_name) {
             XmlTextWriter write_here = new XmlTextWriter(file_name, System.Text.Encoding.UTF8);
             write_here.Formatting = Formatting.Indented;
@@ -61,11 +107,51 @@ namespace Config {
             return true;
         }
 
-        private XmlElement getNode(bool create, params string[] children) {
+        private XmlElement ConfigNode {
+            get {
+                if (!config.HasChildNodes)
+                    return null;
+                return config.ChildNodes[1] as XmlElement;
+            }
+        }
+
+        private List<XmlElement> getNodes(List<string> path, bool create) {
+            List<XmlElement> return_me = new List<XmlElement>();
+            if (config.HasChildNodes) {
+                XmlElement node = ConfigNode;
+                foreach(string name in path) {
+                    bool found = false;
+                    foreach (XmlElement child in node.ChildNodes) {
+                        if (child.Name == name) {
+                            if (path[-1] == name) {
+                                return_me.Add(child);
+                            } else {
+                                node = child;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+                        if (create) {
+                            XmlElement new_node = config.CreateElement(name);
+                            node.AppendChild(new_node);
+                            node = new_node;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            return return_me;
+        }
+
+
+        private XmlElement getNode(bool create, List<string> children) {
             if (!config.HasChildNodes)
                 return null;
 
-            XmlElement nodes = config.ChildNodes[1] as XmlElement;
+            XmlElement nodes = ConfigNode;
+
             foreach (string child in children) {
                 bool found = false;
                 foreach (XmlElement node in nodes.ChildNodes) {
@@ -90,10 +176,9 @@ namespace Config {
         }
 
 
-
-        protected List<string> getNodeGroupValues(string name, params string[] names) {
+        protected List<string> getNodeGroupValues(string name, List<string> names) {
             List<string> return_me = new List<string>();
-            ;
+            
             lock (config) {
                 XmlElement node = getNode(false, names);
                 if (node == null)
@@ -105,7 +190,8 @@ namespace Config {
             }
             return return_me;
         }
-        protected bool setNodeGroupValues(string name, List<string> values, params string[] names) {
+
+        protected bool setNodeGroupValues(string name, List<string> values, List<string> names) {
             lock (config) {
                 XmlElement node = getNode(false, names);
                 if (node != null)
@@ -121,7 +207,7 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected string getNodeValue(params string[] names) {
+        protected string getNodeValue(List<string> names) {
             lock (config) {
                 XmlElement node = getNode(false, names);
                 if (node == null)
@@ -129,7 +215,7 @@ namespace Config {
                 return node.InnerText;
             }
         }
-        protected string getNodeAttribute(string attribute, params string[] name) {
+        protected string getNodeAttribute(string attribute, List<string> name) {
             lock (config) {
                 XmlElement node = getNode(false, name);
                 if (node == null)
@@ -142,7 +228,7 @@ namespace Config {
             }
         }
 
-        protected bool setNodeValue(string value, params string[] name) {
+        protected bool setNodeValue(string value, List<string> name) {
             lock (config) {
                 XmlElement node = getNode(true, name);
                 if (node == null)
@@ -151,7 +237,7 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected bool setNodeAttribute(string attribute, string value, params string[] name) {
+        protected bool setNodeAttribute(string attribute, string value, List<string> name) {
             lock (config) {
                 XmlElement node = getNode(true, name);
                 if (node == null)
@@ -160,11 +246,11 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected XmlElement getSpecificNode(string name, bool create, params string[] attribs) {
+        protected XmlElement getSpecificNode(string name, bool create, List<string> attribs) {
             if (!config.HasChildNodes)
                 return null;
 
-            if (attribs.Length % 2 != 0)
+            if (attribs.Count % 2 != 0)
                 throw new Exception("An uneven number of identifying attribute values has been supplied");
 
             XmlElement return_me = null;
@@ -174,7 +260,7 @@ namespace Config {
                     continue;
 
                 return_me = node;
-                for (int i = 0; i < attribs.Length; i++) {
+                for (int i = 0; i < attribs.Count; i++) {
                     if (!node.HasAttribute(attribs[i])) {
                         return_me = null;
                         break;
@@ -192,7 +278,7 @@ namespace Config {
             if (return_me == null) {
                 if (create) {
                     return_me = config.CreateElement(name);
-                    for (int i = 0; i < attribs.Length; i++) {
+                    for (int i = 0; i < attribs.Count; i++) {
                         return_me.SetAttribute(attribs[i], attribs[++i]);
                     }
                     nodes.AppendChild(return_me);
@@ -200,7 +286,7 @@ namespace Config {
             }
             return return_me;
         }
-        protected bool setSpecificNodeValue(string name, string value, params string[] attribs) {
+        protected bool setSpecificNodeValue(string name, string value, List<string> attribs) {
             lock (config) {
                 XmlElement node = getSpecificNode(name, true, attribs);
                 if (node == null)
@@ -209,7 +295,7 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected bool setSpecificNodeAttrib(string name, string attrib_name, string attrib_value, params string[] attribs) {
+        protected bool setSpecificNodeAttrib(string name, string attrib_name, string attrib_value, List<string> attribs) {
             lock (config) {
                 XmlElement node = getSpecificNode(name, true, attribs);
                 if (node == null)
@@ -218,7 +304,7 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected string getSpecificNodeValue(string name, params string[] attribs) {
+        protected string getSpecificNodeValue(string name, List<string> attribs) {
             lock (config) {
                 XmlElement node = getSpecificNode(name, false, attribs);
                 if (node == null)
@@ -226,7 +312,7 @@ namespace Config {
                 return node.InnerText;
             }
         }
-        protected string getSpecificNodeAttribute(string name, string attrib, params string[] attribs) {
+        protected string getSpecificNodeAttribute(string name, string attrib, List<string> attribs) {
             lock (config) {
                 XmlElement node = getSpecificNode(name, false, attribs);
                 if (node == null)
@@ -239,14 +325,14 @@ namespace Config {
             }
         }
 
-        protected bool clearNode(params string[] names) {
+        protected bool clearNode(List<string> names) {
             lock (config) {
                 XmlElement node = getNode(false, names);
                 if (node == null)
                     return true;
 
                 node = node.ParentNode as XmlElement;
-                string name = names[names.Length - 1];
+                string name = names[names.Count - 1];
                 for (int i = 0; i < node.ChildNodes.Count; i++) {
                     if (node.ChildNodes[i].Name == name) {
                         node.RemoveChild(node.ChildNodes[i]);
@@ -258,7 +344,7 @@ namespace Config {
             }
             return writeConfig();
         }
-        protected bool clearSpecificNodeAttribute(string name, string attrib, params string[] attribs) {
+        protected bool clearSpecificNodeAttribute(string name, string attrib, List<string> attribs) {
             lock (config) {
                 XmlElement node = getSpecificNode(name, false, attribs);
                 if (node == null)

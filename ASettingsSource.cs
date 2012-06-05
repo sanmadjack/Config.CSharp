@@ -60,10 +60,7 @@ namespace Config {
         }
 
 
-        public List<string> read(Setting setting) {
-            List<string> return_me = new List<string>();
-            return return_me;
-        }
+        public abstract List<string> read(Setting setting);
 
         // This erases all the existing settings with the new setting
         public List<string> overwrite(Setting setting, string value) {
@@ -79,17 +76,12 @@ namespace Config {
         }
 
         // This ADDS a setting to the stack
-        public void write(Setting setting, string value) {
-        }
+        public abstract void write(Setting setting, string value);
 
         // Erasing existing settings
-        public bool erase(Setting setting, string value) {
-            return false;
-        }
+        public abstract bool erase(Setting setting, string value);
 
-        public List<string> erase(Setting setting) {
-            return read(setting);
-        }
+        public abstract List<string> erase(Setting setting);
 
         #region config file stuff
         protected virtual void loadSettings() {
