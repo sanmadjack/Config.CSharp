@@ -45,6 +45,7 @@
     <Compile Include="ASettings.cs" />
     <Compile Include="Permissions.cs" />
     <Compile Include="Setting.cs" />
+    <Compile Include="SettingProperty.cs" />
     <Compile Include="SettingsCollection.cs" />
     <Compile Include="XmlSettingsFile.cs" />
     <Compile Include="ConfigMode.cs" />

@@ -6,6 +6,7 @@ using System.Text;
 namespace Config {
     public class Setting {
         public ASettings settings;
+        public List<SettingProperty> properties = new List<SettingProperty>();
 
         public string name { get; private set; }
 
