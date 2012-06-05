@@ -54,7 +54,7 @@ namespace Config {
         public string getLast(string name) {
             List<string> list = get(name);
             if (list.Count > 0) {
-                return list[-1];
+                return list[list.Count-1];
             } else {
                 return null;
             }

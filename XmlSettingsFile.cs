@@ -53,8 +53,8 @@ namespace Config {
         }
         public override void write(Setting setting, string value) {
             List<string> path = new List<string>(setting.path);
-            string name = path[-1];
-            path.RemoveAt(-1);
+            string name = path[path.Count-1];
+            path.RemoveAt(path.Count - 1);
 
             XmlElement node = getNodes(path, true)[0];
 
@@ -123,7 +123,8 @@ namespace Config {
                     bool found = false;
                     foreach (XmlElement child in node.ChildNodes) {
                         if (child.Name == name) {
-                            if (path[-1] == name) {
+                            found = true;
+                            if (path[path.Count-1] == name) {
                                 return_me.Add(child);
                             } else {
                                 node = child;
@@ -135,7 +136,12 @@ namespace Config {
                         if (create) {
                             XmlElement new_node = config.CreateElement(name);
                             node.AppendChild(new_node);
-                            node = new_node;
+                            if (path[path.Count - 1] == name) {
+                                return_me.Add(new_node);
+                                break;
+                            } else {
+                                node = new_node;
+                            }
                         } else {
                             break;
                         }
