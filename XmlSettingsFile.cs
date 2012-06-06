@@ -65,7 +65,7 @@ namespace Config {
             XmlTextWriter write_here = new XmlTextWriter(file_name, System.Text.Encoding.UTF8);
             write_here.Formatting = Formatting.Indented;
             write_here.WriteProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
-            write_here.WriteStartElement("config");
+            write_here.WriteStartElement("settings");
             write_here.Close();
             return true;
         }

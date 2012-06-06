@@ -11,7 +11,7 @@ namespace Config {
         private System.Threading.Mutex mutex = null;
 
         private string file_path = null;
-        private string file_name = "config";
+        private string file_name = "settings";
         private string file_extension = null;
         public string file_full_path {
             get {
@@ -55,7 +55,7 @@ namespace Config {
                 // Load the settings from the file
                 loadSettings();
             } else {
-                throw new Exception("Could Not Determine Config File Location");
+                throw new Exception("Could Not Determine Setting File Location");
             }
         }
 
