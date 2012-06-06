@@ -51,6 +51,7 @@ namespace Config {
             }
             return result;
         }
+
         public string getLast(string name) {
             List<string> list = get(name);
             if (list.Count > 0) {
@@ -59,6 +60,7 @@ namespace Config {
                 return null;
             }
         }
+
         public bool getLastBoolean(string name) {
             return Boolean.Parse(getLast(name));
         }
@@ -68,6 +70,7 @@ namespace Config {
             
             List<string> old = source.erase(setting);
             if (old.Count > 0) {
+                source.save();
                 NotifyPropertyChanged(setting);
             }
             return old;
@@ -78,6 +81,7 @@ namespace Config {
 
             List<string> old = source.overwrite(setting, value.ToString());
             if(old.Count != 1 || old[0] != value) {
+                source.save();
                 NotifyPropertyChanged(setting);
             }
         }
@@ -85,12 +89,15 @@ namespace Config {
         public void add(string name, object value) {
             Setting setting = keyTest(name);
             source.write(setting, value.ToString());
+            source.save();
             NotifyPropertyChanged(setting);
         }
+
         public bool addUnique(string name, object value) {
             Setting setting = keyTest(name);
             if(!source.read(setting).Contains(value.ToString())) {
                 source.write(setting, value.ToString());
+                source.save();
                 NotifyPropertyChanged(setting);
                 return true;
             }
@@ -100,8 +107,10 @@ namespace Config {
         public bool remove(string name, string value) {
             Setting setting = keyTest(name);
             bool result = source.erase(setting, value);
-            if(result)
+            if (result) {
+                source.save();
                 NotifyPropertyChanged(setting);
+            }
             return result;
         }
 

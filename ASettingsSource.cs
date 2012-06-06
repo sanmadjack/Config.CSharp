@@ -12,8 +12,8 @@ namespace Config {
 
         private string file_path = null;
         private string file_name = "config";
-        protected string file_extension = null;
-        protected string file_full_path {
+        private string file_extension = null;
+        public string file_full_path {
             get {
                 return Path.Combine(file_path, file_name + "." + file_extension);
             }
@@ -29,10 +29,10 @@ namespace Config {
 
         private bool enable_writing = true;
 
-        public ASettingsSource(string app_name, ConfigMode mode) {
+        protected ASettingsSource(string app_name, ConfigMode mode, string extension) {
 
             this.mutex =  new System.Threading.Mutex(false, app_name);
-
+            file_extension = extension;
             this.mode = mode;
             switch (mode) {
                 case ConfigMode.PortableApps:
@@ -135,13 +135,12 @@ namespace Config {
             releaseFile();
 
         }
-        protected bool writeConfig() {
+        public bool save() {
             lockFile();
             lock (config_stream) {
                 config_watcher.EnableRaisingEvents = false;
                 try {
                     config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
-
                     writeConfig(config_stream);
                 } finally {
                     config_stream.Close();
