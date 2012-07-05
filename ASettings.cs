@@ -80,7 +80,7 @@ namespace Config {
             Setting setting = keyTest(name);
 
             List<string> old = source.overwrite(setting, value.ToString());
-            if(old.Count != 1 || old[0] != value) {
+            if(old.Count != 1 || old[0] != value.ToString()) {
                 source.save();
                 NotifyPropertyChanged(setting);
             }
