@@ -122,7 +122,7 @@ namespace Config {
 
         #region Generic, everything could use these kinds of settings
         protected virtual SettingsCollection createSettings(SettingsCollection settings) {
-            settings.Add(new Setting("email", null, "email"));
+            settings.Add(new Setting("email", null, "email","address"));
 
             settings.Add(new Setting("last_drive", current_drive, "portable_settings", "last_drive"));
 
