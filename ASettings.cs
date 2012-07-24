@@ -5,6 +5,13 @@ using System.Text;
 using System.IO;
 using MVC;
 namespace Config {
+    public enum WindowState {
+        Normal,
+        Minimized,
+        Maximized,
+        Iconified
+    }
+
     public abstract class ASettings: ANotifyingObject {
 
         private ASettingsSource source;
@@ -55,10 +62,16 @@ namespace Config {
         public string getLast(string name) {
             List<string> list = get(name);
             if (list.Count > 0) {
-                return list[list.Count-1];
+                return list[list.Count - 1];
             } else {
                 return null;
             }
+        }
+        public int getLastInteger(string name) {
+            string value = getLast(name);
+            if (value == null)
+                value = "0";
+            return Int32.Parse(value);
         }
 
         public bool getLastBoolean(string name) {
@@ -123,11 +136,63 @@ namespace Config {
         #region Generic, everything could use these kinds of settings
         protected virtual SettingsCollection createSettings(SettingsCollection settings) {
             settings.Add(new Setting("email", null, "email","address"));
-
             settings.Add(new Setting("last_drive", current_drive, "portable_settings", "last_drive"));
+            settings.Add(new Setting("WindowX", null, "window", "x"));
+            settings.Add(new Setting("WindowY", null, "window", "y"));
+            settings.Add(new Setting("WindowW", null, "window", "h"));
+            settings.Add(new Setting("WindowH", null, "window", "w"));
+            settings.Add(new Setting("WindowState", null, "window", "state"));
 
             return settings;
         }
+
+
+        #region Window-related
+        public int WindowX {
+            get {
+                return getLastInteger("WindowX");
+            }
+            set {
+                set("WindowX", value);
+            }
+        }
+        public int WindowY {
+            get {
+                return getLastInteger("WindowY");
+            }
+            set {
+                set("WindowY", value);
+            }
+        }
+        public int WindowW {
+            get {
+                return getLastInteger("WindowW");
+            }
+            set {
+                set("WindowW", value);
+            }
+        }
+        public int WindowH {
+            get {
+                return getLastInteger("WindowH");
+            }
+            set {
+                set("WindowH", value);
+            }
+        }
+        public WindowState WindowState {
+            get {
+                string value = getLast("WindowState");
+                if (value == null)
+                    return Config.WindowState.Normal;
+                return (WindowState)Enum.Parse(typeof(WindowState), value);
+            }
+            set {
+                set("WindowState", value);
+            }
+        }
+
+        #endregion
 
         #region e-mail related
         public string email {
