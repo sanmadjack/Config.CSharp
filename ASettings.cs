@@ -135,7 +135,8 @@ namespace Config {
 
         #region Generic, everything could use these kinds of settings
         protected virtual SettingsCollection createSettings(SettingsCollection settings) {
-            settings.Add(new Setting("email", null, "email","address"));
+            settings.Add(new Setting("EmailSender", null, "email", "sender"));
+            settings.Add(new Setting("EmailRecipient", null, "email", "recipient"));
             settings.Add(new Setting("last_drive", current_drive, "portable_settings", "last_drive"));
             settings.Add(new Setting("WindowX", null, "window", "x"));
             settings.Add(new Setting("WindowY", null, "window", "y"));
@@ -195,15 +196,27 @@ namespace Config {
         #endregion
 
         #region e-mail related
-        public string email {
+        public string EmailSender {
             get {
-                return getLast("email");
+                return getLast("EmailSender");
             }
             set {
                 if (value != null && value.Contains("@")) {
                     int loc = value.IndexOf('@');
                     if (value.Substring(loc + 1).Contains("."))
-                        set("email", value);
+                        set("EmailSender", value);
+                }
+            }
+        }
+        public string EmailRecipient {
+            get {
+                return getLast("EmailRecipient");
+            }
+            set {
+                if (value != null && value.Contains("@")) {
+                    int loc = value.IndexOf('@');
+                    if (value.Substring(loc + 1).Contains("."))
+                        set("EmailRecipient", value);
                 }
             }
         }
