@@ -23,7 +23,7 @@ namespace Config {
 
         public ConfigMode mode { get; protected set; }
 
-        private string app_name;
+//        private string app_name;
 
         public bool config_ready { get; protected set; }
 
