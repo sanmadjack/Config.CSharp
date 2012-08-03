@@ -27,7 +27,7 @@ namespace Config {
 
         public bool config_ready { get; protected set; }
 
-        private bool enable_writing = true;
+        //private bool enable_writing = true;
 
         protected ASettingsSource(string app_name, ConfigMode mode, string extension) {
 
@@ -157,7 +157,7 @@ namespace Config {
         #endregion
         #region lock stuff
         protected void lockFile() {
-            enable_writing = false;
+            //enable_writing = false;
             if (mutex != null)
                 mutex.WaitOne();
         }
@@ -165,7 +165,7 @@ namespace Config {
         protected void releaseFile() {
             if (mutex != null)
                 mutex.ReleaseMutex();
-            enable_writing = true;
+            //enable_writing = true;
         }
         #endregion
         #region config watcher stuff
