@@ -208,7 +208,7 @@ namespace Config {
                 }
             }
         }
-        public string EmailRecipient {
+        public virtual string EmailRecipient {
             get {
                 return getLast("EmailRecipient");
             }
