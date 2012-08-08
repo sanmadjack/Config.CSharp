@@ -13,9 +13,15 @@ namespace Config {
         private string file_path = null;
         private string file_name = "settings";
         private string file_extension = null;
-        public string file_full_path {
+        public string FullFileName {
             get {
-                return Path.Combine(file_path, file_name + "." + file_extension);
+                return file_name + "." + file_extension;
+            }
+        }
+
+        public string FullFilePath {
+            get {
+                return Path.Combine(file_path, FullFileName);
             }
         }
 
@@ -29,27 +35,39 @@ namespace Config {
 
         //private bool enable_writing = true;
 
-        protected ASettingsSource(string app_name, ConfigMode mode, string extension) {
+
+        protected ASettingsSource(string app_name, string extension) {
 
             this.mutex =  new System.Threading.Mutex(false, app_name);
             file_extension = extension;
             this.mode = mode;
-            switch (mode) {
-                case ConfigMode.PortableApps:
-                    DirectoryInfo dir = new DirectoryInfo(Path.Combine("..", "..", "Data"));
-                    if (!dir.Exists) {
-                        dir.Create();
-                        dir.Refresh();
-                    }
-                    file_path = dir.FullName;
-                    break;
-                case ConfigMode.AllUsers:
-                    file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), app_name);
-                    break;
-                case ConfigMode.SingleUser:
-                    file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), app_name);
-                    break;
+
+            // If there is a settings.xml in the working directory, it will be used.
+            FileInfo test = new FileInfo(FullFileName);
+            if (test.Exists) {
+                file_path = test.DirectoryName;
+                mode = ConfigMode.Portable;
+            } else {
+                file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), app_name);
+                mode = ConfigMode.SingleUser;
             }
+
+            //switch (mode) {
+            //    case ConfigMode.PortableApps:
+            //        DirectoryInfo dir = new DirectoryInfo(Path.Combine("..", "..", "Data"));
+            //        if (!dir.Exists) {
+            //            dir.Create();
+            //            dir.Refresh();
+            //        }
+            //        file_path = dir.FullName;
+            //        break;
+            //    case ConfigMode.AllUsers:
+            //        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), app_name);
+            //        break;
+            //    case ConfigMode.SingleUser:
+            //        file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), app_name);
+            //        break;
+            //}
 
             if (file_path != null) {
                 // Load the settings from the file
@@ -99,18 +117,18 @@ namespace Config {
                     if (!Directory.Exists(file_path))
                         Directory.CreateDirectory(file_path);
 
-                    if (!File.Exists(file_full_path)) {
-                        createConfig(file_full_path);
+                    if (!File.Exists(FullFilePath)) {
+                        createConfig(FullFilePath);
                     }
 
-                    config_stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                    config_stream = new FileStream(FullFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                     break;
                 } catch (Exception e) {
                     config_ready = false;
                     if (i < 5)
                         System.Threading.Thread.Sleep(100);
                     else
-                        throw new WriteDeniedException(new FileInfo(file_full_path), e);
+                        throw new WriteDeniedException(new FileInfo(FullFilePath), e);
                 } finally {
                     if (config_stream != null)
                         config_stream.Close();
@@ -118,7 +136,7 @@ namespace Config {
             }
 
             lock (config_stream) {
-                config_stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
+                config_stream = new FileStream(FullFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
                 try {
                     config_ready = loadConfig(config_stream);
                 } finally {
@@ -140,7 +158,7 @@ namespace Config {
             lock (config_stream) {
                 config_watcher.EnableRaisingEvents = false;
                 try {
-                    config_stream = new FileStream(file_full_path, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
+                    config_stream = new FileStream(FullFilePath, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
                     writeConfig(config_stream);
                 } finally {
                     config_stream.Close();

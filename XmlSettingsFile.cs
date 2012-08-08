@@ -10,8 +10,8 @@ namespace Config {
 
         private XmlDocument config;
 
-        public XmlSettingsFile(string app_name, ConfigMode mode)
-            : base(app_name,mode,"xml") {
+        public XmlSettingsFile(string app_name)
+            : base(app_name,"xml") {
         }
 
 
@@ -84,8 +84,8 @@ namespace Config {
                 if (e.Message.StartsWith("Root element is missing")) {
                     reader.Close();
                     stream.Close();
-                    createConfig(file_full_path);
-                    stream = new FileStream(file_full_path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                    createConfig(FullFilePath);
+                    stream = new FileStream(FullFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                     reader = XmlReader.Create(stream, xml_settings);
                     config.Load(reader);
                 } else {
