@@ -103,7 +103,7 @@ namespace Config {
 
         #region config file stuff
         protected virtual void loadSettings() {
-            lockFile();
+            //lockFile();
             config_ready = false;
             if (config_watcher != null) {
                 config_watcher.EnableRaisingEvents = false;
@@ -150,7 +150,7 @@ namespace Config {
             }
             setupWatcher();
 
-            releaseFile();
+            //releaseFile();
 
         }
         public bool save() {

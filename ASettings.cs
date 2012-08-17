@@ -13,7 +13,11 @@ namespace Config {
     }
 
     public abstract class ASettings: ANotifyingObject {
-
+        public string SourcePath {
+            get {
+                return Path.GetDirectoryName(source.FullFilePath);
+            }
+        }
         private ASettingsSource source;
         public ConfigMode mode {
             get {
