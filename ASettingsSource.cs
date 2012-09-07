@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using MVC;
 using Exceptions;
+using MVC;
 namespace Config {
     public abstract class ASettingsSource : ANotifyingObject {
         private FileStream config_stream;
@@ -29,7 +27,7 @@ namespace Config {
 
         public ConfigMode mode { get; protected set; }
 
-//        private string app_name;
+        //        private string app_name;
 
         public bool config_ready { get; protected set; }
 
@@ -38,7 +36,7 @@ namespace Config {
 
         protected ASettingsSource(string app_name, string extension) {
 
-            this.mutex =  new System.Threading.Mutex(false, app_name);
+            this.mutex = new System.Threading.Mutex(false, app_name);
             file_extension = extension;
             this.mode = mode;
 

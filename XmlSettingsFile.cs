@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using MVC;
-using Exceptions;
 namespace Config {
 
     public class XmlSettingsFile : ASettingsSource {
@@ -11,7 +8,7 @@ namespace Config {
         private XmlDocument config;
 
         public XmlSettingsFile(string app_name)
-            : base(app_name,"xml") {
+            : base(app_name, "xml") {
         }
 
 
@@ -27,7 +24,7 @@ namespace Config {
         public override List<string> erase(Setting setting) {
             List<string> strings = new List<string>();
             List<XmlElement> nodes = getNodes(setting.path, false);
-            while(nodes.Count > 0) {
+            while (nodes.Count > 0) {
                 XmlElement node = nodes[0];
                 strings.Add(node.InnerText);
                 node.ParentNode.RemoveChild(node);
@@ -51,7 +48,7 @@ namespace Config {
         }
         public override void write(Setting setting, string value) {
             List<string> path = new List<string>(setting.path);
-            string name = path[path.Count-1];
+            string name = path[path.Count - 1];
             path.RemoveAt(path.Count - 1);
 
             XmlElement node = getNodes(path, true)[0];
@@ -117,12 +114,12 @@ namespace Config {
             List<XmlElement> return_me = new List<XmlElement>();
             if (config.HasChildNodes) {
                 XmlElement node = ConfigNode;
-                foreach(string name in path) {
+                foreach (string name in path) {
                     bool found = false;
                     foreach (XmlElement child in node.ChildNodes) {
                         if (child.Name == name) {
                             found = true;
-                            if (path[path.Count-1] == name) {
+                            if (path[path.Count - 1] == name) {
                                 return_me.Add(child);
                             } else {
                                 node = child;

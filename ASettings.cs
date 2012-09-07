@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using MVC;
 namespace Config {
@@ -12,7 +10,7 @@ namespace Config {
         Iconified
     }
 
-    public abstract class ASettings: ANotifyingObject {
+    public abstract class ASettings : ANotifyingObject {
         public string SourcePath {
             get {
                 return Path.GetDirectoryName(source.FullFilePath);
@@ -54,7 +52,7 @@ namespace Config {
             Setting setting = keyTest(name);
 
             List<string> result = source.read(setting);
-            if(result.Count==0) {
+            if (result.Count == 0) {
                 result = new List<string>();
                 if (setting.DefaultValue != null) {
                     result.Add(setting.DefaultValue);
@@ -84,7 +82,7 @@ namespace Config {
 
         public List<string> erase(string name) {
             Setting setting = keyTest(name);
-            
+
             List<string> old = source.erase(setting);
             if (old.Count > 0) {
                 source.save();
@@ -97,7 +95,7 @@ namespace Config {
             Setting setting = keyTest(name);
 
             List<string> old = source.overwrite(setting, value.ToString());
-            if(old.Count != 1 || old[0] != value.ToString()) {
+            if (old.Count != 1 || old[0] != value.ToString()) {
                 source.save();
                 NotifyPropertyChanged(setting);
             }
@@ -112,7 +110,7 @@ namespace Config {
 
         public bool addUnique(string name, object value) {
             Setting setting = keyTest(name);
-            if(!source.read(setting).Contains(value.ToString())) {
+            if (!source.read(setting).Contains(value.ToString())) {
                 source.write(setting, value.ToString());
                 source.save();
                 NotifyPropertyChanged(setting);
