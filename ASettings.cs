@@ -156,7 +156,9 @@ namespace Config {
                 return getLastInteger("WindowX");
             }
             set {
-                set("WindowX", value);
+                if (WindowState == WindowState.Normal) {
+                    set("WindowX", value);
+                }
             }
         }
         public int WindowY {
@@ -164,7 +166,9 @@ namespace Config {
                 return getLastInteger("WindowY");
             }
             set {
-                set("WindowY", value);
+                if (WindowState == WindowState.Normal) {
+                    set("WindowY", value);
+                }
             }
         }
         public int WindowW {
@@ -172,7 +176,9 @@ namespace Config {
                 return getLastInteger("WindowW");
             }
             set {
-                set("WindowW", value);
+                if (WindowState == WindowState.Normal) {
+                    set("WindowW", value);
+                }
             }
         }
         public int WindowH {
@@ -180,7 +186,9 @@ namespace Config {
                 return getLastInteger("WindowH");
             }
             set {
-                set("WindowH", value);
+                if (WindowState == WindowState.Normal) {
+                    set("WindowH", value);
+                }
             }
         }
         public WindowState WindowState {
