@@ -54,7 +54,7 @@ namespace Config {
             List<string> result = source.read(setting);
             if (result.Count == 0) {
                 result = new List<string>();
-                if (setting.DefaultValue != null) {
+                if (!String.IsNullOrEmpty(setting.DefaultValue)) {
                     result.Add(setting.DefaultValue);
                 }
             }
@@ -71,7 +71,7 @@ namespace Config {
         }
         public int getLastInteger(string name) {
             string value = getLast(name);
-            if (value == null)
+            if (String.IsNullOrEmpty(value))
                 value = "0";
             return Int32.Parse(value);
         }
@@ -194,7 +194,7 @@ namespace Config {
         public WindowState WindowState {
             get {
                 string value = getLast("WindowState");
-                if (value == null)
+                if (String.IsNullOrEmpty(value))
                     return Config.WindowState.Normal;
                 return (WindowState)Enum.Parse(typeof(WindowState), value);
             }
@@ -211,7 +211,7 @@ namespace Config {
                 return getLast("EmailSender");
             }
             set {
-                if (value != null && value.Contains("@")) {
+                if (!String.IsNullOrEmpty(value) && value.Contains("@")) {
                     int loc = value.IndexOf('@');
                     if (value.Substring(loc + 1).Contains("."))
                         set("EmailSender", value);
@@ -223,7 +223,7 @@ namespace Config {
                 return getLast("EmailRecipient");
             }
             set {
-                if (value != null && value.Contains("@")) {
+                if (!String.IsNullOrEmpty(value) && value.Contains("@")) {
                     int loc = value.IndexOf('@');
                     if (value.Substring(loc + 1).Contains("."))
                         set("EmailRecipient", value);

@@ -67,7 +67,7 @@ namespace Config {
             //        break;
             //}
 
-            if (file_path != null) {
+            if (!String.IsNullOrEmpty(file_path)) {
                 // Load the settings from the file
                 loadSettings();
             } else {
